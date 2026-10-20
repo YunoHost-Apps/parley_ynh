@@ -1,7 +1,19 @@
-This is a dummy disclaimer to display after the install
+Open `https://__DOMAIN__` and log in with the nick and password given during
+installation. The nick is the YunoHost user you chose; the password is the one
+you typed.
 
-The app url is <https://__DOMAIN____PATH__>
+Administration lives at `/admin` once logged in: accounts, federation peers,
+and the instance settings (history retention, connection limits, login rates).
+Settings take effect immediately, without a restart.
 
-The app install dir is `__INSTALL_DIR__`
+IRC clients cannot connect yet in this version -- see `doc/PRE_INSTALL.md`.
+The tokens the web interface mints are for IRC clients and will start working
+when the package gains a TLS terminator for the IRC listener.
 
-The app id is `__ID__`
+For the command line, the admin token is what authenticates:
+
+```bash
+PARLEY_TOKEN="$(yunohost app setting parley admin_token)" \
+PARLEY_ENDPOINT="https://__DOMAIN__" \
+    /var/www/parley/parleyctl status
+```
