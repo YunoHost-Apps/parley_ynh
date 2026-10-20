@@ -1,29 +1,25 @@
 [Unit]
-Description=Parley: federated, decentralised chat over IRC
-After=network.target
+Description=Parley: federated IRC chat
+After=network-online.target
+Wants=network-online.target
+StartLimitIntervalSec=60
+StartLimitBurst=5
 
 [Service]
 Type=simple
 User=__APP__
 Group=__APP__
-WorkingDirectory=__INSTALL_DIR__
+# parley.db is resolved relative to the working directory when
+# PARLEY_DATA_DIR is unset, so keep it somewhere sensible.
+WorkingDirectory=__DATA_DIR__
+EnvironmentFile=__INSTALL_DIR__/parley.env
 ExecStart=__INSTALL_DIR__/parleyd
 Restart=always
-RestartSec=3
-
-Environment=PARLEY_DOMAIN=__DOMAIN__
-Environment=PARLEY_ENDPOINT=https://__DOMAIN____PATH__
-Environment=PARLEY_DATA_DIR=__DATA_DIR__
-Environment=PARLEY_HTTP_LISTEN=127.0.0.1:__PORT__
-Environment=PARLEY_HTTP_PROXIES=127.0.0.1
-Environment=PARLEY_IRC_LISTEN=0.0.0.0:6667
-Environment=PARLEY_IRC_PORT=6697
-Environment=PARLEY_ADMINS=__ADMIN__
-Environment=PARLEY_ADMIN_TOKEN=__ADMIN_TOKEN__
-
+RestartSec=5
 StandardOutput=append:/var/log/__APP__/__APP__.log
 StandardError=inherit
 
+### Sandboxing; a static Go binary needs very little.
 NoNewPrivileges=yes
 PrivateTmp=yes
 PrivateDevices=yes
