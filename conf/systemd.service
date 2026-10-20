@@ -1,20 +1,29 @@
 [Unit]
-Description=Small description of the service
+Description=Parley: federated, decentralised chat over IRC
 After=network.target
 
 [Service]
 Type=simple
 User=__APP__
 Group=__APP__
-WorkingDirectory=__INSTALL_DIR__/
-ExecStart=__INSTALL_DIR__/script
+WorkingDirectory=__INSTALL_DIR__
+ExecStart=__INSTALL_DIR__/parleyd
+Restart=always
+RestartSec=3
+
+Environment=PARLEY_DOMAIN=__DOMAIN__
+Environment=PARLEY_ENDPOINT=https://__DOMAIN____PATH__
+Environment=PARLEY_DATA_DIR=__DATA_DIR__
+Environment=PARLEY_HTTP_LISTEN=127.0.0.1:__PORT__
+Environment=PARLEY_HTTP_PROXIES=127.0.0.1
+Environment=PARLEY_IRC_LISTEN=0.0.0.0:6667
+Environment=PARLEY_IRC_PORT=6697
+Environment=PARLEY_ADMINS=__ADMIN__
+Environment=PARLEY_ADMIN_TOKEN=__ADMIN_TOKEN__
+
 StandardOutput=append:/var/log/__APP__/__APP__.log
 StandardError=inherit
 
-### Depending on specificities of your service/app, you may need to tweak these
-### .. but this should be a good baseline
-# Sandboxing options to harden security
-# Details for these options: https://www.freedesktop.org/software/systemd/man/systemd.exec.html
 NoNewPrivileges=yes
 PrivateTmp=yes
 PrivateDevices=yes
@@ -31,10 +40,8 @@ ProtectKernelModules=yes
 ProtectKernelTunables=yes
 LockPersonality=yes
 SystemCallArchitectures=native
-SystemCallFilter=~@clock @debug @module @mount @obsolete @reboot @setuid @swap @cpu-emulation @privileged
+SystemCallFilter=~@clock @debug @module @mount @obsolete @reboot @setuid @swap
 
-# Denying access to capabilities that should not be relevant for webapps
-# Doc: https://man7.org/linux/man-pages/man7/capabilities.7.html
 CapabilityBoundingSet=~CAP_RAWIO CAP_MKNOD
 CapabilityBoundingSet=~CAP_AUDIT_CONTROL CAP_AUDIT_READ CAP_AUDIT_WRITE
 CapabilityBoundingSet=~CAP_SYS_BOOT CAP_SYS_TIME CAP_SYS_MODULE CAP_SYS_PACCT
