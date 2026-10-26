@@ -5,7 +5,10 @@ test_format = 1.0
 [default]
 
 
-    exclude = ["install.subdir","change_url"]
+    # Subpath installs are tested: the proxy needed a trailing slash to work
+    # under a path, and that is exactly the kind of thing CI should not miss.
+    # change_url stays excluded because the script refuses by design.
+    exclude = ["change_url"]
 
     [default.curl_tests.wellknown]
         path = "/.well-known/parley/instance.json"
