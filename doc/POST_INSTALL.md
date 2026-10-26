@@ -1,4 +1,4 @@
-Open `https://__DOMAIN__` and log in with the nick and password given during
+Open `https://__DOMAIN____PATH__` and log in with the nick and password given during
 installation. The nick is the YunoHost user you chose; the password is the one
 you typed.
 
@@ -14,6 +14,6 @@ For the command line, the admin token is what authenticates:
 
 ```bash
 PARLEY_TOKEN="$(yunohost app setting parley admin_token)" \
-PARLEY_ENDPOINT="https://__DOMAIN__" \
+PARLEY_ENDPOINT="https://__DOMAIN____PATH__" \
     /var/www/parley/parleyctl status
 ```

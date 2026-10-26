@@ -100,8 +100,11 @@ fi
 
 ynh_script_progression "Creating the administrator account..."
 
+# Over loopback, not over the public URL: nginx and the YunoHost SSO sit in
+# front of the app, and at this point neither the certificate nor the permission
+# is guaranteed to be ready. The API parleyctl speaks to is the same listener.
 if ! printf '%s\n' "$admin_password" | \
-    PARLEY_ENDPOINT="https://${domain}${path}" \
+    PARLEY_ENDPOINT="http://127.0.0.1:$port" \
     PARLEY_TOKEN="$admin_token" \
     "$install_dir/parleyctl" accounts create "$admin" -password-stdin; then
     ynh_die "Could not create the account for '$admin'"

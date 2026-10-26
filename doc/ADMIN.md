@@ -6,7 +6,7 @@ admin token, which the package generated at install time:
 ```bash
 cd /var/www/parley
 export PARLEY_TOKEN="$(yunohost app setting parley admin_token)"
-export PARLEY_ENDPOINT="https://__DOMAIN__"
+export PARLEY_ENDPOINT="https://__DOMAIN____PATH__"
 
 ./parleyctl status
 ./parleyctl accounts list
@@ -46,8 +46,10 @@ as every peer is concerned, even though the database and its keys survive.
 
 ## Removing the application deletes the instance
 
-`yunohost app remove parley` also removes `/home/yunohost.app/parley`, which is
-`parley.db`: accounts, federation keys and history. Back up first:
+`yunohost app remove parley` also removes `/home/yunohost.app/parley`: that is
+the whole instance — `parley.db` (accounts), `history.db` (messages),
+`identity.key` (the federation key), `vapid.key` (push) and `uploads/`. Nothing
+of it survives the removal, so back up first:
 
 ```bash
 yunohost backup create --apps parley

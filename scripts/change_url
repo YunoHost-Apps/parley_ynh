@@ -1,46 +1,20 @@
 #!/bin/bash
 
-## this script is only run if actual change to domain/path is detected, if you're here either $domain or $path changed
-## new location is available via $domain and $path (or $new_domain and $new_path variables if you want to be explicit)
-## old values are available via, you guessed it, $old_domain and $old_path
-
 #=================================================
-# IMPORT GENERIC HELPERS
+# CHANGE URL IS NOT SUPPORTED, AND SAYS SO
 #=================================================
+#
+# The domain is the instance's federation identity: peers store it, the
+# federation keys are bound to it, and PARLEY_DOMAIN/PARLEY_ENDPOINT are baked
+# into parley.env and into the database. Renaming the instance through YunoHost
+# would leave a running server that answers on a new host while still claiming
+# the old identity, so the honest answer is a refusal, not a half-migration.
+#
+# Reinstalling on the new domain and restoring the backup into it is the only
+# way to move an instance, and it is a new identity as far as peers are
+# concerned.
 
 source _common.sh
 source /usr/share/yunohost/helpers
 
-#=================================================
-# STOP SYSTEMD SERVICE
-#=================================================
-ynh_script_progression "Stopping $app's systemd service..."
-
-ynh_systemctl --service="$app" --action="stop"
-
-#=================================================
-# MODIFY URL IN NGINX CONF
-#=================================================
-ynh_script_progression "Updating NGINX web server configuration..."
-
-# this will most likely adjust NGINX config correctly
-ynh_config_change_url_nginx
-
-#=================================================
-# SPECIFIC MODIFICATIONS
-#=================================================
-
-## do any changes to files that reference specific installation domain/path, i.e. regenerate configs etc
-
-#=================================================
-# START SYSTEMD SERVICE
-#=================================================
-ynh_script_progression "Starting $app's systemd service..."
-
-ynh_systemctl --service="$app" --action="start"
-
-#=================================================
-# END OF SCRIPT
-#=================================================
-
-ynh_script_progression "Change of URL completed for $app"
+ynh_die --message "Changing the URL of a Parley instance is not supported: the domain is its federation identity. Reinstall on the new domain and restore a backup into it instead (peers will see a new instance)."

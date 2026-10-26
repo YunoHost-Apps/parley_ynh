@@ -7,7 +7,7 @@ name = "Parley"
 description.en = "Federated, decentralised chat that speaks plain IRC"
 description.fr = "Chat fédéré et décentralisé qui parle clairement IRC"
 
-version = "0.5.0~ynh1"
+version = "0.6.0~ynh1"
 
 maintainers = ["doesnm"]
 
@@ -38,7 +38,10 @@ ram.runtime = "50M"
 
     [install.init_main_permission]
     type = "group"
-    default = "all_users"
+    # Public on purpose: Parley has its own accounts, and federation means other
+    # instances must reach the API without a YunoHost session. Behind SSO this
+    # instance could not federate and IRC clients could not use their tokens.
+    default = "visitors"
 
     [install.admin]
     type = "user"
@@ -51,11 +54,17 @@ ram.runtime = "50M"
     [resources.sources]
 
     [resources.sources.main]
-    url = "https://git.mills.io/prologic/parley/archive/v0.5.0.tar.gz"
-    sha256 = "414f5e8b67e9eb6f954b231d6878ad364edc3858e8ae474c28292568b8a10569"
-
+    # A binary release, not the source archive: the package installs parleyd and
+    # parleyctl as they are and never builds anything. v0.6.0 is the first
+    # release that ships them.
+    url = "https://git.mills.io/prologic/parley/releases/download/v0.6.0/parley_0.6.0_linux_amd64.tar.gz"
+    sha256 = "0fd41fc115f161e4b02997d8c3d7d0803ac96173fa77a64ee2c364a56fb720e4"
+    # The archive is flat (parleyd, parleyctl, LICENSE, README.md at its root),
+    # so the helper must not strip a top-level directory that is not there.
+    in_subdir = false
 
     autoupdate.strategy = "latest_gitea_release"
+    autoupdate.asset.amd64 = "^parley_.*_linux_amd64.tar.gz$"
 
     [resources.system_user]
 
