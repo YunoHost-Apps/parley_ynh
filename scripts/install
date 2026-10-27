@@ -104,6 +104,13 @@ ynh_systemctl --service=nginx --action=reload
 
 yunohost service add "$app" --description="Federated IRC chat server" --log="/var/log/$app/$app.log"
 
+# The tile in the YunoHost portal: for an app outside the catalog there is no
+# logo_hash to inherit, so the package supplies the icon and records it on its
+# own permission. This is the app's own artwork, taken from upstream.
+cp "$YNH_APP_BASEDIR/conf/logo.png" "$install_dir/logo.png"
+chown "$app:$app" "$install_dir/logo.png"
+yunohost user permission update "$app.main" --logo "$install_dir/logo.png" >/dev/null
+
 #=================================================
 # START THE SERVICE
 #=================================================
