@@ -18,7 +18,7 @@ code = "https://git.mills.io/prologic/parley"
 fund = "https://prologic.dev/donate.html"
 
 [integration]
-yunohost = ">= 12.1.17"
+yunohost = ">= 12.1.40"
 helpers_version = "2.1"
 architectures = ["amd64"]
 multi_instance = true
