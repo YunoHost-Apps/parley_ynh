@@ -67,6 +67,14 @@ ynh_script_progression "Adding $app's configuration files..."
 mkdir -p "$data_dir" /var/log/"$app"
 chown "$app:$app" "$data_dir" /var/log/"$app"
 
+# The public IRC port and the loopback one parleyd listens on. Both are settings
+# rather than constants because 6697 is a popular number and the admin may need
+# to move it: `yunohost app setting parley irc_port <port>` then upgrade.
+irc_port=${irc_port:-6697}
+irc_local_port=${irc_local_port:-6667}
+ynh_app_setting_set --key=irc_port --value="$irc_port"
+ynh_app_setting_set --key=irc_local_port --value="$irc_local_port"
+
 ynh_config_add --template="parley.env" --destination="$install_dir/parley.env"
 chmod 640 "$install_dir/parley.env"
 chown "$app:$app" "$install_dir/parley.env"
@@ -80,6 +88,19 @@ ynh_script_progression "Adding system configurations related to $app..."
 ynh_config_add_systemd
 ynh_config_add_nginx
 ynh_config_add_logrotate
+
+# IRC over TLS. The stream{} block has to live in /etc/nginx/modules-enabled/,
+# because that directory is included at nginx's top level: a stream block inside
+# conf.d/*.conf would land in the http{} context and be a syntax error. This is
+# the same mechanism YunoHost uses for its own TLS-passthrough block, and a lab
+# run confirmed regen-conf does not remove foreign files from there.
+ynh_script_progression "Adding the IRC terminator..."
+
+ynh_config_add --template="parley-irc.conf" --destination="/etc/nginx/modules-enabled/$app-irc.conf"
+chmod 644 "/etc/nginx/modules-enabled/$app-irc.conf"
+
+nginx -t
+ynh_systemctl --service=nginx --action=reload
 
 yunohost service add "$app" --description="Federated IRC chat server" --log="/var/log/$app/$app.log"
 
@@ -105,6 +126,12 @@ if [[ "$ready" != true ]]; then
     ynh_print_warn "parleyd did not answer /healthz within 30 seconds"
     journalctl --unit="$app" --no-pager --lines=30 >&2 || true
     ynh_die "The service did not start; see the log above"
+fi
+
+# nginx -t does not bind anything, so a busy port only shows up here. Say it out
+# loud instead of leaving an instance whose advertised IRC line goes nowhere.
+if ! ss -ltn 2>/dev/null | grep -q ":$irc_port "; then
+    ynh_die "Nothing is listening on the IRC port $irc_port after the nginx reload: the port is probably taken by another service. Move this instance with 'yunohost app setting $app irc_port <free port>' and run the upgrade."
 fi
 
 #=================================================

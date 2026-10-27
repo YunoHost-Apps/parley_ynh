@@ -6,9 +6,10 @@ Administration lives at `/admin` once logged in: accounts, federation peers,
 and the instance settings (history retention, connection limits, login rates).
 Settings take effect immediately, without a restart.
 
-IRC clients cannot connect yet in this version -- see `doc/PRE_INSTALL.md`.
-The tokens the web interface mints are for IRC clients and will start working
-when the package gains a TLS terminator for the IRC listener.
+IRC clients connect to `__DOMAIN__` on port **6697 with TLS**, using the account
+name as the nick and either its password or a token from the web interface
+(Settings -> tokens). If the port is not reachable from outside, that is the
+router/firewall, not the package -- see `doc/PRE_INSTALL.md`.
 
 For the command line, the admin token is what authenticates:
 

@@ -55,11 +55,36 @@ of it survives the removal, so back up first:
 yunohost backup create --apps parley
 ```
 
-## When IRC is added later
+## Connecting an IRC client
 
-Parley speaks plain text on the IRC listener and expects TLS in front of it. If
-you put a terminator (nginx `stream`, HAProxy, ...) in front, read
-`docs/PROXY.md` upstream first: the proxy address must be listed as an
-`irc_proxies` instance setting **and** the proxy must send the PROXY header.
-One without the other breaks connections, and the address to list is the one on
-the socket, not the one you assume the proxy has.
+The package runs nginx as a TLS terminator in front of Parley's IRC listener and
+publishes IRC on port **6697**:
+
+```
+server:   __DOMAIN__
+port:     6697
+TLS:      yes (required)
+nick:     the account name
+password: the account password, or a token from Settings -> tokens
+```
+
+`parleyctl me tokens create -label "irssi on laptop"` prints a token for the
+account behind the admin token; the web interface does the same thing with a
+button.
+
+If 6697 is already taken on this machine, move it and run the upgrade:
+
+```bash
+yunohost app setting parley irc_port 6698
+yunohost app upgrade parley
+```
+
+**How it is wired, so nobody has to rediscover it.** `conf/parley-irc.conf`
+renders to `/etc/nginx/modules-enabled/parley-irc.conf`, because that directory
+is included at nginx's top level and a `stream {}` block cannot live in
+`conf.d` (that is the `http {}` context). Parley itself listens on
+`127.0.0.1:6667` and only accepts the PROXY header from the addresses listed in
+`PARLEY_IRC_PROXIES` — the package sets `127.0.0.1`. Both halves are required:
+with `proxy_protocol on` but without that list, Parley parses the PROXY line as
+an IRC command and answers `451 * :You have not registered` before the real
+conversation, which looks like a broken client rather than a broken proxy.

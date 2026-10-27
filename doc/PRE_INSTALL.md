@@ -8,11 +8,12 @@
   install would answer on the page and then 404 on every asset. The install
   script refuses that instead of producing a half-broken instance.
 
-**IRC is not reachable from the network in this version of the package.** The
-IRC listener runs on loopback only, because Parley expects TLS to be
-terminated in front of it and this package does not ship a terminator yet.
-Administration over the web interface and federation over HTTPS work normally;
-IRC clients cannot connect until a later version of the package adds that.
+**IRC needs one thing from you after installation: a reachable port.** The
+package terminates TLS in front of Parley's IRC listener and serves IRC on
+**port 6697**, so clients connect with TLS on that port. If this instance is
+behind a router or a firewall, that port has to be forwarded or opened
+elsewhere — the package cannot do that part. The port is a setting
+(`yunohost app setting parley irc_port`) if 6697 is taken.
 
 The installation creates a user, `/var/www/parley` for the binaries and
 `/home/yunohost.app/parley` for the instance database, and asks for a password
