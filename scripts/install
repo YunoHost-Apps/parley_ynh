@@ -10,7 +10,6 @@ source /usr/share/yunohost/helpers
 #=================================================
 # DOWNLOAD, CHECK AND UNPACK SOURCE
 #=================================================
-
 ynh_script_progression "Setting up source files..."
 
 ynh_setup_source --dest_dir="$install_dir"
@@ -25,7 +24,6 @@ done
 #=================================================
 # GENERATE THE ADMIN TOKEN
 #=================================================
-
 ynh_script_progression "Generating the instance admin token..."
 
 admin_token=$(openssl rand -hex 32)
@@ -34,7 +32,6 @@ ynh_app_setting_set --key=admin_token --value="$admin_token"
 #=================================================
 # CONFIGURE THE INSTANCE
 #=================================================
-
 ynh_script_progression "Adding $app's configuration files..."
 
 mkdir -p "$data_dir" /var/log/"$app"
@@ -115,7 +112,6 @@ yunohost user permission update "$app.main" --logo "$install_dir/logo.png" >/dev
 #=================================================
 # START THE SERVICE
 #=================================================
-
 ynh_script_progression "Starting $app's systemd service..."
 
 ynh_systemctl --service="$app" --action="start"
@@ -143,7 +139,6 @@ fi
 #=================================================
 # CREATE THE ADMIN ACCOUNT
 #=================================================
-
 ynh_script_progression "Creating the administrator account..."
 
 # Over loopback: neither the certificate nor the SSO permission is ready yet.
@@ -158,4 +153,4 @@ fi
 # END OF INSTALL
 #=================================================
 
-ynh_script_progression "Installation of $app completed" --last
+ynh_script_progression "Installation of $app completed"

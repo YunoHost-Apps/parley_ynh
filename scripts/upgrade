@@ -9,15 +9,21 @@ source /usr/share/yunohost/helpers
 
 admin_token=$(ynh_app_setting_get --key=admin_token)
 if [ -z "$admin_token" ]; then
-    ynh_script_progression "Generating the instance admin token..." --weight=1
+    ynh_script_progression "Generating the instance admin token..."
     admin_token=$(openssl rand -hex 32)
     ynh_app_setting_set --key=admin_token --value="$admin_token"
 fi
 
+#=================================================
+# STOP SYSTEMD SERVICE
+#=================================================
 ynh_script_progression "Stopping $app's systemd service..."
 
 ynh_systemctl --service="$app" --action="stop"
 
+#=================================================
+# DOWNLOAD, CHECK AND UNPACK SOURCE
+#=================================================
 ynh_script_progression "Upgrading source files..."
 
 # --keep keeps the rendered environment file, which is regenerated below.
@@ -30,6 +36,9 @@ for binary in parleyd parleyctl; do
     chmod 755 "$install_dir/$binary"
 done
 
+#=================================================
+# UPDATE A CONFIG FILE
+#=================================================
 ynh_script_progression "Updating $app's configuration files..."
 
 mkdir -p "$data_dir" /var/log/"$app"
@@ -48,6 +57,7 @@ irc_port=${irc_port:-6697}
 install -d -m 755 /etc/nginx/stream.d
 ynh_config_add --template="parley-irc.conf" --destination="/etc/nginx/stream.d/$app.conf"
 chmod 644 "/etc/nginx/stream.d/$app.conf"
+
 if [ ! -f /etc/nginx/modules-enabled/parley-stream.conf ]; then
     cp "$YNH_APP_BASEDIR/conf/parley-stream.conf" /etc/nginx/modules-enabled/parley-stream.conf
     chmod 644 /etc/nginx/modules-enabled/parley-stream.conf
@@ -60,6 +70,9 @@ cp "$YNH_APP_BASEDIR/conf/logo.png" "$install_dir/logo.png"
 chown "$app:$app" "$install_dir/logo.png"
 yunohost user permission update "$app.main" --logo "$install_dir/logo.png" >/dev/null
 
+#=================================================
+# START SYSTEMD SERVICE
+#=================================================
 ynh_script_progression "Starting $app's systemd service..."
 
 ynh_systemctl --service="$app" --action="start"
@@ -70,4 +83,8 @@ if ! ss -ltn 2>/dev/null | grep -q ":$irc_port "; then
     ynh_print_warn "Nothing is listening on the IRC port $irc_port after the upgrade."
 fi
 
-ynh_script_progression "Upgrade of $app completed" --last
+#=================================================
+# END OF SCRIPT
+#=================================================
+
+ynh_script_progression "Upgrade of $app completed"
