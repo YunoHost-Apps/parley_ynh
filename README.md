@@ -19,11 +19,7 @@ Federated, decentralised chat that speaks plain IRC
 
 
 ## Screenshots
-![Screenshot of Parley](./doc/screenshots/1-portal.png)
-![Screenshot of Parley](./doc/screenshots/2-login.png)
-![Screenshot of Parley](./doc/screenshots/3-instance.png)
-![Screenshot of Parley](./doc/screenshots/4-admin-accounts.png)
-![Screenshot of Parley](./doc/screenshots/5-account-settings.png)
+![Screenshot of Parley](./doc/screenshots/screenshot.png)
 
 ## 📦 Developer info
 
