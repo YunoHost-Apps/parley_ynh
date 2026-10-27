@@ -2,6 +2,11 @@
   domain and it cannot be changed later without becoming a different instance.
 * About 150 MiB of disk: the server and its command line client are Go
   binaries of roughly 35 MiB each.
+* **A dedicated (sub)domain, with the path left as `/`.** Parley's web
+  interface uses absolute paths (`/assets`, `/login`, `/theme`,
+  `/site.webmanifest`) and the binary has no base-path setting, so a subpath
+  install would answer on the page and then 404 on every asset. The install
+  script refuses that instead of producing a half-broken instance.
 
 **IRC is not reachable from the network in this version of the package.** The
 IRC listener runs on loopback only, because Parley expects TLS to be

@@ -17,4 +17,4 @@
 source _common.sh
 source /usr/share/yunohost/helpers
 
-ynh_die --message "Changing the URL of a Parley instance is not supported: the domain is its federation identity. Reinstall on the new domain and restore a backup into it instead (peers will see a new instance)."
+ynh_die "Changing the URL of a Parley instance is not supported: the domain is its federation identity. Reinstall on the new domain and restore a backup into it instead (peers will see a new instance)."

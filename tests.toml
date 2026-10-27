@@ -5,10 +5,12 @@ test_format = 1.0
 [default]
 
 
-    # Subpath installs are tested: the proxy needed a trailing slash to work
-    # under a path, and that is exactly the kind of thing CI should not miss.
-    # change_url stays excluded because the script refuses by design.
-    exclude = ["change_url"]
+    # install.subdir is excluded again, and now for a real reason: parley's UI
+    # uses absolute paths (/assets, /login, /theme) and has no base-path setting,
+    # so a subpath install answers 200 on the page and then breaks on every
+    # asset. The install script refuses it instead of letting CI discover it.
+    # change_url is excluded because that script refuses by design.
+    exclude = ["install.subdir", "change_url"]
 
     [default.curl_tests.wellknown]
         path = "/.well-known/parley/instance.json"

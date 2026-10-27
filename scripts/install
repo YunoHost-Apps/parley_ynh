@@ -14,6 +14,23 @@ source _common.sh
 source /usr/share/yunohost/helpers
 
 #=================================================
+# REFUSE A SUBPATH INSTALL
+#=================================================
+#
+# Parley's web interface references its assets and its login form as absolute
+# paths (/assets/..., /login, /theme, /site.webmanifest) and the binary has no
+# base-path setting at all. Under a subpath the page itself would answer 200
+# while every asset and the login POST went to the domain root, where YunoHost
+# serves the portal: a broken-looking UI that is hard to diagnose.
+#
+# PARLEY_ENDPOINT with a path is not a fix -- it only affects the API and
+# federation URLs, which is why instance.json looks right in that setup.
+
+if [ "$path" != "/" ]; then
+    ynh_die "Parley must be installed at the root of its own domain: its web interface uses absolute paths (/assets, /login, /theme) and has no base-path setting. Choose a dedicated (sub)domain and leave the path as '/'."
+fi
+
+#=================================================
 # DOWNLOAD, CHECK AND UNPACK SOURCE
 #=================================================
 
