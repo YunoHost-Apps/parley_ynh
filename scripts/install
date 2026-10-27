@@ -8,14 +8,6 @@ source _common.sh
 source /usr/share/yunohost/helpers
 
 #=================================================
-# REFUSE A SUBPATH INSTALL
-#=================================================
-
-if [ "$path" != "/" ]; then
-    ynh_die "Parley must be installed at the root of its own domain: its web interface uses absolute paths (/assets, /login, /theme) and has no base-path setting. Choose a dedicated (sub)domain and leave the path as '/'."
-fi
-
-#=================================================
 # DOWNLOAD, CHECK AND UNPACK SOURCE
 #=================================================
 
