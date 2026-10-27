@@ -32,6 +32,31 @@ ou par utilisateur avec des masques :
 ./parleyctl peers list
 ```
 
+Un pair qui répond apparaît comme `linked` ; c'est aussi le moment où les messages
+commencent à circuler — un utilisateur d'ici rejoint un canal global et apparaît
+sur l'autre instance sous la forme `pseudo:domaine`.
+
+Par défaut la politique est `open` : toute instance qui se présente peut se
+fédérer, dans la limite de `federation.new_peer_rate`. Si cette instance ne doit
+parler qu'aux instances que vous avez nommées :
+
+```bash
+./parleyctl settings set federation.policy allowlist
+```
+
+Mesuré sur deux instances : avec le pair dans la liste les messages continuent
+d'arriver, une fois le pair retiré le message de la même instance est ignoré, et
+le remettre rétablit la livraison. Le réglage est donc une barrière vivante sur
+qui peut livrer, pas une poignée de main unique.
+
+**Certificats.** La fédération sortante vérifie le certificat TLS du pair, ce qui
+est souhaitable sur un vrai domaine et ne pose problème que lorsque les deux côtés
+sont en auto-signé. Il existe un drapeau pour cela — `parleyd -ca <bundle>` — mais
+aucune variable d'environnement : il ne peut donc pas venir de `parley.env`.
+Ajoutez un drop-in systemd avec `ExecStart=` puis le nouveau
+`ExecStart=<install_dir>/parleyd -ca …`, et donnez au fichier le mode 644 (le
+répertoire des certificats de YunoHost est réservé à root).
+
 L'identité de l'instance, c'est son domaine, plus une paire de clés stockée dans
 `parley.db`. **`parleyctl key export -y` affiche la clé privée** ; gardez-en une
 copie ailleurs si l'instance compte, car la perdre revient à apparaître comme une

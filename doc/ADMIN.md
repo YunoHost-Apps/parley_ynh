@@ -33,6 +33,30 @@ masks:
 ./parleyctl peers list
 ```
 
+A peer that answers shows up as `linked`; that is also the point where messages
+start flowing — a user here joins a global channel and appears on the other
+instance as `nick:domain`.
+
+By default the policy is `open`: any instance that shows up can federate, up to
+`federation.new_peer_rate`. If this instance should only talk to instances you
+named, switch it:
+
+```bash
+./parleyctl settings set federation.policy allowlist
+```
+
+Measured on two instances: with the peer in the list messages keep arriving, with
+the peer removed the same instance's message is dropped, and re-adding it restores
+delivery. So the switch is a live gate on who may deliver, not a one-time
+handshake.
+
+**Certificates.** Outbound federation verifies the peer's TLS certificate, which
+is what you want on a real domain and is a problem only when both sides are on
+self-signed certificates. There is a flag for that — `parleyd -ca <bundle>` — but
+no environment variable, so it cannot come from `parley.env`: add a systemd
+drop-in with `ExecStart=` plus the new `ExecStart=<install_dir>/parleyd -ca …` and
+give the file 644 (the YunoHost certificate directory is root-only).
+
 The instance's own identity is its domain, plus a key pair stored in
 `parley.db`. **`parleyctl key export -y` prints the private key**; keep a copy
 somewhere else if the instance matters, because losing it means peers see a
