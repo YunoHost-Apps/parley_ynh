@@ -19,11 +19,8 @@ ynh_config_remove_logrotate
 ynh_config_remove_nginx
 
 # Nothing owns these files but this script: they are not part of any regen-conf
-# category, so if remove does not delete them, nginx keeps a stream listener for a
-# certificate of a domain that no longer serves the app.
 if [ -f "/etc/nginx/stream.d/$app.conf" ] || [ -f "/etc/nginx/modules-enabled/$app-irc.conf" ]; then
     rm -f "/etc/nginx/stream.d/$app.conf" "/etc/nginx/modules-enabled/$app-irc.conf"
-    # The shared wrapper is pointless — and one stream block too many — once no
     # instance is left on this machine.
     if ! ls /etc/nginx/stream.d/parley*.conf >/dev/null 2>&1; then
         rm -f /etc/nginx/modules-enabled/parley-stream.conf
@@ -33,8 +30,6 @@ fi
 
 ynh_script_progression "Removing $app's files..."
 
-# The data directory goes too: it is parley.db and nothing else. Say so in
-# doc/ADMIN.md rather than surprising the operator after an rm.
 ynh_safe_rm "$install_dir"
 ynh_safe_rm "$data_dir"
 

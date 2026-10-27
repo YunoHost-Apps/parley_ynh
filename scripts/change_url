@@ -3,16 +3,6 @@
 #=================================================
 # CHANGE URL IS NOT SUPPORTED, AND SAYS SO
 #=================================================
-#
-# The domain is the instance's federation identity: peers store it, the
-# federation keys are bound to it, and PARLEY_DOMAIN/PARLEY_ENDPOINT are baked
-# into parley.env and into the database. Renaming the instance through YunoHost
-# would leave a running server that answers on a new host while still claiming
-# the old identity, so the honest answer is a refusal, not a half-migration.
-#
-# Reinstalling on the new domain and restoring the backup into it is the only
-# way to move an instance, and it is a new identity as far as peers are
-# concerned.
 
 source _common.sh
 source /usr/share/yunohost/helpers

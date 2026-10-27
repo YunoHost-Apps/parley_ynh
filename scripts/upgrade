@@ -3,16 +3,10 @@
 #=================================================
 # UPGRADE PARLEY FROM A NEWER BINARY RELEASE
 #=================================================
-#
-# parley.db is never touched here: the server migrates its own schema and
-# settings on start, and an older binary refuses to open a newer database --
-# which is the correct behaviour, so downgrades are not supported.
 
 source _common.sh
 source /usr/share/yunohost/helpers
 
-# Settings introduced by a later package version must exist before the
-# templates below are rendered.
 admin_token=$(ynh_app_setting_get --key=admin_token)
 if [ -z "$admin_token" ]; then
     ynh_script_progression "Generating the instance admin token..." --weight=1
@@ -49,9 +43,6 @@ ynh_config_add_systemd
 ynh_config_add_nginx
 ynh_config_add_logrotate
 
-# The terminator has to follow a domain or port change, and it carries the
-# certificate path, so regenerate it on every upgrade. Same split as install: one
-# shared `stream {}` wrapper, one bare server per instance.
 irc_port=$(ynh_app_setting_get --key=irc_port)
 irc_port=${irc_port:-6697}
 install -d -m 755 /etc/nginx/stream.d

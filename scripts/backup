@@ -10,7 +10,6 @@ source /usr/share/yunohost/helpers
 ynh_print_info "Declaring files to be backed up..."
 
 # $data_dir is the instance: parley.db holds the accounts, the federation keys
-# and the history. Everything else here is reproducible.
 ynh_backup "$data_dir"
 
 ynh_backup "$install_dir"

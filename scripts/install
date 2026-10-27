@@ -3,12 +3,6 @@
 #=================================================
 # INSTALL PARLEY FROM A BINARY RELEASE
 #=================================================
-#
-# The release archive is expected to contain the two binaries next to each
-# other: `parleyd` (the server) and `parleyctl` (the admin client). Nothing is
-# compiled here -- if the upstream release stops shipping binaries, the source
-# has to be built somewhere else and this script only needs `url`/`sha256`
-# changed in the manifest.
 
 source _common.sh
 source /usr/share/yunohost/helpers
@@ -16,15 +10,6 @@ source /usr/share/yunohost/helpers
 #=================================================
 # REFUSE A SUBPATH INSTALL
 #=================================================
-#
-# Parley's web interface references its assets and its login form as absolute
-# paths (/assets/..., /login, /theme, /site.webmanifest) and the binary has no
-# base-path setting at all. Under a subpath the page itself would answer 200
-# while every asset and the login POST went to the domain root, where YunoHost
-# serves the portal: a broken-looking UI that is hard to diagnose.
-#
-# PARLEY_ENDPOINT with a path is not a fix -- it only affects the API and
-# federation URLs, which is why instance.json looks right in that setup.
 
 if [ "$path" != "/" ]; then
     ynh_die "Parley must be installed at the root of its own domain: its web interface uses absolute paths (/assets, /login, /theme) and has no base-path setting. Choose a dedicated (sub)domain and leave the path as '/'."
@@ -48,10 +33,6 @@ done
 #=================================================
 # GENERATE THE ADMIN TOKEN
 #=================================================
-#
-# parleyd has no users of its own on first start: accounts are created through
-# the HTTP API, which needs either an admin token or an existing session. The
-# token is what the package and, if it wants to, the operator use for that.
 
 ynh_script_progression "Generating the instance admin token..."
 
@@ -67,16 +48,10 @@ ynh_script_progression "Adding $app's configuration files..."
 mkdir -p "$data_dir" /var/log/"$app"
 chown "$app:$app" "$data_dir" /var/log/"$app"
 
-# The public IRC port and the loopback one parleyd listens on. Both are settings
-# rather than constants because 6697 is a popular number and the admin may need
-# to move it: `yunohost app setting parley irc_port <port>` then upgrade.
 irc_port=${irc_port:-6697}
 irc_local_port=${irc_local_port:-6667}
 
-# multi_instance = true, and there is no install question for the IRC port, so a
-# second instance on this machine would otherwise collide with the first one and
-# die after the service is already running. Take the next free port instead and
-# say so: the advertised port is part of what its users have to be told.
+# A second instance on this machine cannot reuse 6697 or 6667.
 if ss -ltn 2>/dev/null | grep -q ":$irc_port "; then
     requested_port=$irc_port
     for candidate in $(seq "$requested_port" $((requested_port + 20))); do
@@ -91,8 +66,6 @@ if ss -ltn 2>/dev/null | grep -q ":$irc_port "; then
     ynh_print_warn "IRC port $requested_port is already in use on this machine, so this instance listens on $irc_port. Tell your users the right port; the web interface shows it."
 fi
 
-# Same reason for the loopback port parleyd itself listens on: two instances on
-# one machine cannot both bind 127.0.0.1:6667.
 if ss -ltn 2>/dev/null | grep -q ":$irc_local_port "; then
     requested_local=$irc_local_port
     for candidate in $(seq "$requested_local" $((requested_local + 20))); do
@@ -123,11 +96,7 @@ ynh_config_add_systemd
 ynh_config_add_nginx
 ynh_config_add_logrotate
 
-# IRC over TLS. nginx allows exactly ONE `stream {}` block in a configuration, so
-# the wrapper lives once in modules-enabled (included at nginx's top level) and
-# every instance drops a bare server into stream.d/, which the wrapper includes.
-# A per-instance `stream { ... }` file broke the second install outright:
-# `"stream" directive is duplicate`.
+# nginx accepts one stream{} block: the shared wrapper plus one server per instance.
 ynh_script_progression "Adding the IRC terminator..."
 
 install -d -m 755 /etc/nginx/stream.d
@@ -139,7 +108,6 @@ if [ ! -f /etc/nginx/modules-enabled/parley-stream.conf ]; then
     chmod 644 /etc/nginx/modules-enabled/parley-stream.conf
 fi
 
-# Clean up the pre-0.6.0 layout where the whole stream block was per instance.
 rm -f "/etc/nginx/modules-enabled/$app-irc.conf"
 
 nginx -t
@@ -147,9 +115,7 @@ ynh_systemctl --service=nginx --action=reload
 
 yunohost service add "$app" --description="Federated IRC chat server" --log="/var/log/$app/$app.log"
 
-# The tile in the YunoHost portal: for an app outside the catalog there is no
-# logo_hash to inherit, so the package supplies the icon and records it on its
-# own permission. This is the app's own artwork, taken from upstream.
+# Not in the catalog, so there is no logo_hash to inherit.
 cp "$YNH_APP_BASEDIR/conf/logo.png" "$install_dir/logo.png"
 chown "$app:$app" "$install_dir/logo.png"
 yunohost user permission update "$app.main" --logo "$install_dir/logo.png" >/dev/null
@@ -162,7 +128,6 @@ ynh_script_progression "Starting $app's systemd service..."
 
 ynh_systemctl --service="$app" --action="start"
 
-# parleyd answers /healthz on the HTTP listener once it is ready to serve.
 ready=false
 for _ in $(seq 1 30); do
     if curl --fail --silent --show-error "http://127.0.0.1:$port/healthz" >/dev/null 2>&1; then
@@ -178,8 +143,7 @@ if [[ "$ready" != true ]]; then
     ynh_die "The service did not start; see the log above"
 fi
 
-# nginx -t does not bind anything, so a busy port only shows up here. Say it out
-# loud instead of leaving an instance whose advertised IRC line goes nowhere.
+# nginx -t does not bind, so a taken port only shows up here.
 if ! ss -ltn 2>/dev/null | grep -q ":$irc_port "; then
     ynh_die "Nothing is listening on the IRC port $irc_port after the nginx reload: the port is probably taken by another service. Move this instance with 'yunohost app setting $app irc_port <free port>' and run the upgrade."
 fi
@@ -187,16 +151,10 @@ fi
 #=================================================
 # CREATE THE ADMIN ACCOUNT
 #=================================================
-#
-# The nick is the YunoHost login so that a later SSO integration has one name
-# to reason about. The password is asked for in the manifest: without an
-# identity provider there is nothing else to log in with.
 
 ynh_script_progression "Creating the administrator account..."
 
-# Over loopback, not over the public URL: nginx and the YunoHost SSO sit in
-# front of the app, and at this point neither the certificate nor the permission
-# is guaranteed to be ready. The API parleyctl speaks to is the same listener.
+# Over loopback: neither the certificate nor the SSO permission is ready yet.
 if ! printf '%s\n' "$admin_password" | \
     PARLEY_ENDPOINT="http://127.0.0.1:$port" \
     PARLEY_TOKEN="$admin_token" \
