@@ -56,15 +56,17 @@ ram.runtime = "50M"
     # A binary release, not the source archive: the package installs parleyd and
     # parleyctl as they are and never builds anything. v0.6.0 is the first
     # release that ships them.
-    url = "https://git.mills.io/prologic/parley/releases/download/v0.6.0/parley_0.6.0_linux_amd64.tar.gz"
-    sha256 = "0fd41fc115f161e4b02997d8c3d7d0803ac96173fa77a64ee2c364a56fb720e4"
+    amd64.url = "https://git.mills.io/prologic/parley/releases/download/v0.6.0/parley_0.6.0_linux_amd64.tar.gz"
+    amd64.sha256 = "0fd41fc115f161e4b02997d8c3d7d0803ac96173fa77a64ee2c364a56fb720e4"
+    arm64.url = "https://git.mills.io/prologic/parley/releases/download/v0.6.0/parley_0.6.0_linux_arm64.tar.gz"
+    arm64.sha256 = "58b6a6d9d21f6ba1f18d567b4ff392e661a59b1caf8406ec2f7e792697ca2c2d"
     # The archive is flat (parleyd, parleyctl, LICENSE, README.md at its root),
     # so the helper must not strip a top-level directory that is not there.
     in_subdir = false
 
     autoupdate.strategy = "latest_gitea_release"
     autoupdate.asset.amd64 = "^parley_.*_linux_amd64.tar.gz$"
-
+    autoupdate.asset.arm64 = "^parley_.*_linux_arm64.tar.gz$"
     [resources.system_user]
 
     [resources.install_dir]
