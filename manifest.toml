@@ -22,7 +22,7 @@ yunohost = ">= 12.1.17"
 helpers_version = "2.1"
 architectures = ["amd64"]
 multi_instance = true
-sso = false
+sso = true
 ldap = false
 disk = "150M"
 ram.build = "50M"
@@ -38,10 +38,11 @@ ram.runtime = "50M"
 
     [install.init_main_permission]
     type = "group"
-    # Public on purpose: Parley has its own accounts, and federation means other
-    # instances must reach the API without a YunoHost session. Behind SSO this
-    # instance could not federate and IRC clients could not use their tokens.
-    default = "visitors"
+    # The web interface is behind the YunoHost SSO, so this is the group that may
+    # use it. Federation is NOT behind it: the public paths are declared as
+    # separate permissions below, because a portal gate over /api or /inbox would
+    # leave the instance looking healthy while no peer could deliver anything.
+    default = "all_users"
 
     [install.admin]
     type = "user"
@@ -74,6 +75,30 @@ ram.runtime = "50M"
 
     [resources.permissions]
     main.url = "/"
+
+    # Everything a peer or an IRC client needs, open to visitors. parleyd
+    # authenticates its own API with bearer tokens, so "visitors" here means
+    # "ssowat does not ask for a YunoHost session", not "no authentication".
+    federation_api.url = "/api"
+    federation_api.allowed = "visitors"
+    federation_api.show_tile = false
+    federation_api.auth_header = false
+
+    federation_inbox.url = "/inbox"
+    federation_inbox.allowed = "visitors"
+    federation_inbox.show_tile = false
+    federation_inbox.auth_header = false
+
+    federation_wellknown.url = "/.well-known"
+    federation_wellknown.allowed = "visitors"
+    federation_wellknown.show_tile = false
+    federation_wellknown.auth_header = false
+
+    # Peers fetch avatars while unfurling messages from this instance.
+    avatars.url = "/avatars"
+    avatars.allowed = "visitors"
+    avatars.show_tile = false
+    avatars.auth_header = false
 
     [resources.ports]
 

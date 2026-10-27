@@ -55,6 +55,34 @@ of it survives the removal, so back up first:
 yunohost backup create --apps parley
 ```
 
+## Who may log in
+
+The web interface is behind the YunoHost login (`sso = true`): ssowat
+authenticates the request and nginx forwards the identity in `Ynh-User`,
+`Ynh-User-Email` and `Ynh-User-Fullname`, which parleyd trusts because
+`PARLEY_TRUSTED_PROXIES=127.0.0.1`.
+
+Two consequences worth knowing:
+
+* **The portal gate covers the interface, not the federation.** `/api`, `/inbox`,
+  `/.well-known` and `/avatars` are separate YunoHost permissions open to
+  visitors. If someone "tidies up" by putting the whole app behind `all_users`,
+  the instance keeps answering browsers and stops federating — peers get a login
+  redirect instead of a signature check. parleyd still authenticates its own API
+  with bearer tokens there, so "visitors" means "no YunoHost session", not "no
+  authentication".
+* **Parley keeps its own session.** Visiting `/` with a portal session shows the
+  Log in link until `/login` is hit once; that page sees the trusted header and
+  logs the person in without a password. The local password still works, which
+  is what you want on the command line and when testing without the portal.
+
+The group that may use the interface is the app's `main` permission:
+
+```bash
+yunohost user permission list | grep parley
+yunohost user permission update parley.main --add-group visitors   # or a group
+```
+
 ## Connecting an IRC client
 
 The package runs nginx as a TLS terminator in front of Parley's IRC listener and

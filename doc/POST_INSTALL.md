@@ -1,6 +1,11 @@
-Open `https://__DOMAIN____PATH__` and log in with the nick and password given during
-installation. The nick is the YunoHost user you chose; the password is the one
-you typed.
+Open `https://__DOMAIN____PATH__`. The instance is behind the YunoHost login:
+you sign in with your YunoHost account, and the first visit to `/login` claims
+the Parley account with the same nick automatically -- no Parley password to
+type.
+
+The password given during installation still works at `/login` for the account
+of the same name, which is useful for the command line and for testing the
+instance without the portal.
 
 Administration lives at `/admin` once logged in: accounts, federation peers,
 and the instance settings (history retention, connection limits, login rates).

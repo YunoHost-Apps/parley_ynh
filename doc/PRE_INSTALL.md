@@ -15,6 +15,13 @@ behind a router or a firewall, that port has to be forwarded or opened
 elsewhere — the package cannot do that part. The port is a setting
 (`yunohost app setting parley irc_port`) if 6697 is taken.
 
+**The web interface sits behind the YunoHost login.** Whoever should use it needs
+a YunoHost account and belongs to the `main` permission of this app (all users by
+default). The federation paths -- `/api`, `/inbox`, `/.well-known` and
+`/avatars` -- are separate permissions open to visitors on purpose: peers cannot
+hold a YunoHost session, and closing those paths would leave the instance
+unreachable to the network while still looking healthy.
+
 The installation creates a user, `/var/www/parley` for the binaries and
 `/home/yunohost.app/parley` for the instance database, and asks for a password
 for the administrator account.
