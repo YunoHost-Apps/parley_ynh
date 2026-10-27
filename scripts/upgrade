@@ -50,11 +50,18 @@ ynh_config_add_nginx
 ynh_config_add_logrotate
 
 # The terminator has to follow a domain or port change, and it carries the
-# certificate path, so regenerate it on every upgrade.
+# certificate path, so regenerate it on every upgrade. Same split as install: one
+# shared `stream {}` wrapper, one bare server per instance.
 irc_port=$(ynh_app_setting_get --key=irc_port)
 irc_port=${irc_port:-6697}
-ynh_config_add --template="parley-irc.conf" --destination="/etc/nginx/modules-enabled/$app-irc.conf"
-chmod 644 "/etc/nginx/modules-enabled/$app-irc.conf"
+install -d -m 755 /etc/nginx/stream.d
+ynh_config_add --template="parley-irc.conf" --destination="/etc/nginx/stream.d/$app.conf"
+chmod 644 "/etc/nginx/stream.d/$app.conf"
+if [ ! -f /etc/nginx/modules-enabled/parley-stream.conf ]; then
+    cp "$YNH_APP_BASEDIR/conf/parley-stream.conf" /etc/nginx/modules-enabled/parley-stream.conf
+    chmod 644 /etc/nginx/modules-enabled/parley-stream.conf
+fi
+rm -f "/etc/nginx/modules-enabled/$app-irc.conf"
 
 yunohost service add "$app" --description="Federated IRC chat server" --log="/var/log/$app/$app.log"
 

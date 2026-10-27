@@ -109,13 +109,23 @@ yunohost app setting parley irc_port 6698
 yunohost app upgrade parley
 ```
 
-**Comment c'est câblé, pour que personne n'ait à le redécouvrir.**
-`conf/parley-irc.conf` est généré vers `/etc/nginx/modules-enabled/parley-irc.conf`,
-parce que ce répertoire est inclus au premier niveau de nginx et qu'un bloc
-`stream {}` ne peut pas vivre dans `conf.d` (qui est le contexte `http {}`).
-Parley écoute lui-même sur `127.0.0.1:6667` et n'accepte l'en-tête PROXY que des
+**Comment c'est câblé, pour que personne n'ait à le redécouvrir.** nginx
+n'accepte qu'un seul bloc `stream {}` par configuration : `conf/parley-stream.conf`
+génère donc cette enveloppe une seule fois vers
+`/etc/nginx/modules-enabled/parley-stream.conf` — ce répertoire est inclus au
+premier niveau de nginx, alors que `conf.d` est le contexte `http {}` où un bloc
+stream est une erreur de syntaxe. Chaque instance dépose ensuite un simple
+`server {}` dans `/etc/nginx/stream.d/<app>.conf`, que l'enveloppe inclut.
+L'enveloppe est créée par la première instance et supprimée par la dernière.
+
+Parley écoute lui-même sur un port loopback et n'accepte l'en-tête PROXY que des
 adresses listées dans `PARLEY_IRC_PROXIES` — le paquet y met `127.0.0.1`. Les deux
 moitiés sont nécessaires : avec `proxy_protocol on` mais sans cette liste, Parley
 lit la ligne PROXY comme une commande IRC et répond
 `451 * :You have not registered` avant la vraie conversation, ce qui ressemble à
 un client cassé plutôt qu'à un proxy mal configuré.
+
+**Une seconde instance sur la même machine** prend le port libre suivant, pour
+l'écouteur public comme pour celui de loopback, puisque 6697 et 6667 sont déjà
+pris : l'avertissement d'installation nomme la paire retenue et les réglages de
+l'instance la conservent (`irc_port`, `irc_local_port`).

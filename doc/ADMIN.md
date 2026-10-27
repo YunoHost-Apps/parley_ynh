@@ -107,12 +107,22 @@ yunohost app setting parley irc_port 6698
 yunohost app upgrade parley
 ```
 
-**How it is wired, so nobody has to rediscover it.** `conf/parley-irc.conf`
-renders to `/etc/nginx/modules-enabled/parley-irc.conf`, because that directory
-is included at nginx's top level and a `stream {}` block cannot live in
-`conf.d` (that is the `http {}` context). Parley itself listens on
-`127.0.0.1:6667` and only accepts the PROXY header from the addresses listed in
-`PARLEY_IRC_PROXIES` — the package sets `127.0.0.1`. Both halves are required:
-with `proxy_protocol on` but without that list, Parley parses the PROXY line as
-an IRC command and answers `451 * :You have not registered` before the real
-conversation, which looks like a broken client rather than a broken proxy.
+**How it is wired, so nobody has to rediscover it.** nginx accepts exactly one
+`stream {}` block per configuration, so `conf/parley-stream.conf` renders that
+wrapper once to `/etc/nginx/modules-enabled/parley-stream.conf` — that directory
+is included at nginx's top level, and `conf.d` is the `http {}` context where a
+stream block is a syntax error. Every instance then drops a bare `server {}` into
+`/etc/nginx/stream.d/<app>.conf`, which the wrapper includes. The wrapper is
+created by the first instance and removed by the last one.
+
+Parley itself listens on a loopback port and only accepts the PROXY header from
+the addresses listed in `PARLEY_IRC_PROXIES` — the package sets `127.0.0.1`. Both
+halves are required: with `proxy_protocol on` but without that list, Parley parses
+the PROXY line as an IRC command and answers `451 * :You have not registered`
+before the real conversation, which looks like a broken client rather than a
+broken proxy.
+
+**A second instance on the same machine** takes the next free port for both the
+public IRC listener and the loopback one, because 6697 and 6667 are already held:
+the install warning names the pair it picked, and the instance settings record
+them (`irc_port`, `irc_local_port`).
