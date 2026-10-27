@@ -7,10 +7,16 @@
 source ../settings/scripts/_common.sh
 source /usr/share/yunohost/helpers
 
+#=================================================
+# RESTORE THE APP MAIN DIR
+#=================================================
 ynh_script_progression "Restoring the app files..."
 
 ynh_restore_everything
 
+#=================================================
+# RESTORE SYSTEM CONFIGURATIONS
+#=================================================
 ynh_script_progression "Restoring system configurations related to $app..."
 
 systemctl enable "$app.service" --quiet
@@ -18,9 +24,16 @@ ynh_config_add_logrotate
 
 yunohost service add "$app" --description="Federated IRC chat server" --log="/var/log/$app/$app.log"
 
+#=================================================
+# RELOAD NGINX AND PHP-FPM OR THE APP SERVICE
+#=================================================
 ynh_script_progression "Reloading NGINX and starting $app..."
 
 ynh_systemctl --service=nginx --action=reload
 ynh_systemctl --service="$app" --action="start"
 
-ynh_script_progression "Restoration completed for $app" --last
+#=================================================
+# END OF SCRIPT
+#=================================================
+
+ynh_script_progression "Restoration completed for $app"

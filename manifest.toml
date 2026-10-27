@@ -99,6 +99,3 @@ ram.runtime = "50M"
     avatars.auth_header = false
 
     [resources.ports]
-
-    #[resources.apt]
-    #packages = "mariadb-server, deb1, deb2, php8.3-foo, php8.3-bar"
