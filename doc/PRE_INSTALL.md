@@ -2,26 +2,10 @@
   domain and it cannot be changed later without becoming a different instance.
 * About 150 MiB of disk: the server and its command line client are Go
   binaries of roughly 35 MiB each.
-* **A dedicated (sub)domain, with the path left as `/`.** Parley's web
-  interface uses absolute paths (`/assets`, `/login`, `/theme`,
-  `/site.webmanifest`) and the binary has no base-path setting, so a subpath
-  install would answer on the page and then 404 on every asset. The install
-  script refuses that instead of producing a half-broken instance.
-
+ 
 **IRC needs one thing from you after installation: a reachable port.** The
 package terminates TLS in front of Parley's IRC listener and serves IRC on
 **port 6697**, so clients connect with TLS on that port. If this instance is
 behind a router or a firewall, that port has to be forwarded or opened
 elsewhere — the package cannot do that part. The port is a setting
 (`yunohost app setting parley irc_port`) if 6697 is taken.
-
-**The web interface sits behind the YunoHost login.** Whoever should use it needs
-a YunoHost account and belongs to the `main` permission of this app (all users by
-default). The federation paths -- `/api`, `/inbox`, `/.well-known` and
-`/avatars` -- are separate permissions open to visitors on purpose: peers cannot
-hold a YunoHost session, and closing those paths would leave the instance
-unreachable to the network while still looking healthy.
-
-The installation creates a user, `/var/www/parley` for the binaries and
-`/home/yunohost.app/parley` for the instance database, and asks for a password
-for the administrator account.
